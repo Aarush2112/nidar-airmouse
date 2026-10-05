@@ -1,0 +1,35 @@
+# ROS 2 generated files
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# ROS bags / recorded data
+*.bag
+*.db3
+*.mcap
+
+# ROS / OpenVINS datasets and large data
+ros2_ws/src/open_vins/ov_data/
+
+# Preserve source, configs and documentation
+# Do NOT ignore calibration/, config/, docs/, launch/, scripts/, src/
+
+# OpenVINS nested Git metadata backup
+ros2_ws/.git-ros2-ws-backup/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.swp
+*~

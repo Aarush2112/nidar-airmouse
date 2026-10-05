@@ -1,0 +1,26 @@
+# ROS 2 generated files
+build/
+install/
+log/
+
+# OpenVINS upstream Git repository/history
+src/open_vins/.git/
+
+# OpenVINS benchmark datasets
+src/open_vins/ov_data/
+
+# ROS bags
+*.bag
+*.db3
+*.mcap
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
