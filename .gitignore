@@ -1,35 +1,73 @@
-# ROS 2 generated files
-ros2_ws/build/
-ros2_ws/install/
-ros2_ws/log/
+# ROS / colcon build products
+build/
+install/
+log/
+logs/
+.ros/
+.colcon/
+ros2_ws/.git-ros2-ws-backup/
+ros2_ws/src/open_vins/.git/
 
-# ROS bags / recorded data
+# Recorded sensor data and upstream benchmark datasets
+bags/
 *.bag
+*.bag.active
 *.db3
+*.db3-shm
+*.db3-wal
 *.mcap
-
-# ROS / OpenVINS datasets and large data
 ros2_ws/src/open_vins/ov_data/
 
-# Preserve source, configs and documentation
-# Do NOT ignore calibration/, config/, docs/, launch/, scripts/, src/
+# Runtime output (keep source YAML and calibration files)
+*.log
+*.log.*
+/inspection_report.txt
+/nidar_frequency_report.txt
+/nidar_full_check_report.txt
 
-# OpenVINS nested Git metadata backup
-ros2_ws/.git-ros2-ws-backup/
-
-# Python
+# Python, test and tool caches
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+htmlcov/
+.venv/
+venv/
 
-# IDE
+# Editor and temporary files
 .vscode/
 .idea/
-
-# OS
 .DS_Store
-
-# Temporary files
+Thumbs.db
 *.tmp
+*.temp
 *.swp
+*.swo
 *~
+*.bak
+# Deliberately retain named VIO .backup_* and .recovery_* experiments.
+
+# Credentials and local environment configuration
+.env
+.env.*
+!.env.example
+!.env.sample
+.aws/
+.ssh/
+.gnupg/
+credentials
+credentials.*
+secrets/
+secrets.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+.netrc
+.git-credentials
