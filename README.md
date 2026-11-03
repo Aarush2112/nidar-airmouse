@@ -22,14 +22,14 @@ A USB connection with sufficient camera bandwidth and a separately configured MA
 
 ```mermaid
 flowchart TD
-    D[RealSense D455] --> C[realsense2_camera]
-    C -->|infra1 + infra2 images and CameraInfo| S[rtabmap_sync / stereo_sync]
-    S -->|/rgbd_image| R[stereo_metadata_relay.py]
-    R -->|/stereo/rgbd_image| O[rtabmap_odom / stereo_odometry]
-    O --> P[/odom and /odom_info]
-    C -. /camera/camera/imu: IMU experiment .-> O
-    F[Flight controller] --> M[Separately started MAVROS]
-    M --> T[State / estimator / IMU / local pose diagnostics]
+    D["RealSense D455"] --> C["realsense2_camera"]
+    C -->|"infra1 + infra2 images and CameraInfo"| S["rtabmap_sync / stereo_sync"]
+    S -->|"/rgbd_image"| R["stereo_metadata_relay.py"]
+    R -->|"/stereo/rgbd_image"| O["rtabmap_odom / stereo_odometry"]
+    O --> P["/odom and /odom_info"]
+    C -.->|"/camera/camera/imu: IMU experiment"| O
+    F["Flight controller"] --> M["Separately started MAVROS"]
+    M --> T["State / estimator / IMU / local pose diagnostics"]
 ```
 
 The synchronizer approximately pairs the infrared images and calibration. Although the container is an `rtabmap_msgs/msg/RGBDImage`, its `depth` image carries the **right stereo image** in this pipeline. The relay changes only `depth_camera_info.header.frame_id` to `camera_infra2_optical_frame`, then republishes the message. It does not rectify images or recalculate calibration.
