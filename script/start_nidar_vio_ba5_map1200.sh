@@ -48,7 +48,7 @@ wait_for_topic() {
     echo "[NIDAR] Waiting for $topic..."
 
     while (( elapsed < timeout )); do
-        if ros2 topic list 2>/dev/null | grep -Fxq "$topic"; then
+        if timeout 5s ros2 topic list 2>/dev/null | grep -Fx "$topic" >/dev/null; then
             echo "[NIDAR] Found $topic"
             return 0
         fi
@@ -97,9 +97,9 @@ start_process stereo_odometry \
     -p qos:=1 \
     -p qos_camera_info:=1 \
     -p frame_id:=camera_link \
-    -p 'Odom/ImageDecimation:="3"' \
+    -p 'Odom/ImageDecimation:="2"' \
     -p 'OdomF2M/BundleAdjustmentMaxFrames:="5"' \
-    -p 'Odom/VisKeyFrameThr:="80"' \
+    -p 'OdomF2M/MaxSize:="1200"' \
     -p 'Vis/MaxFeatures:="1000"' \
     -r rgbd_image:=/stereo/rgbd_image
 

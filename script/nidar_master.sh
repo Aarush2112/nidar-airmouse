@@ -108,7 +108,7 @@ if node_exists /stereo_metadata_relay; then
     echo "[NIDAR] Reusing existing metadata relay."
 else
     start_managed stereo_metadata_relay \
-        python3 "$PROJECT/stereo_metadata_relay.py"
+        python3 "$PROJECT/script/stereo_metadata_relay.py"
 fi
 wait_topic /stereo/rgbd_image 20
 

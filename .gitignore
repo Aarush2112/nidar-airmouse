@@ -48,7 +48,13 @@ Thumbs.db
 *.swo
 *~
 *.bak
-# Deliberately retain named VIO .backup_* and .recovery_* experiments.
+# Archived launcher snapshots
+*.backup_*
+*.recovery_*
+script_archive*/
+script/start_nidar_vio_ba5_map1200_feat700.sh
+script/nidar_bridge_v2.py
+script/nidar_vehicle_odometry_bridge.py
 
 # Credentials and local environment configuration
 .env
@@ -71,3 +77,13 @@ id_rsa*
 id_ed25519*
 .netrc
 .git-credentials
+
+# Nested repository metadata, recordings and firmware
+**/.git/
+*.mp4
+*.avi
+*.mov
+*.px4
+*.bin
+*.hex
+ros2_ws/frames_*

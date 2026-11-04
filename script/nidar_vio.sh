@@ -80,7 +80,7 @@ fi
 wait_topic /rgbd_image 30
 
 if ! node_exists /stereo_metadata_relay; then
-    start_node stereo_metadata_relay python3 "$PROJECT/stereo_metadata_relay.py"
+    start_node stereo_metadata_relay python3 "$PROJECT/script/stereo_metadata_relay.py"
 fi
 wait_topic /stereo/rgbd_image 20
 
