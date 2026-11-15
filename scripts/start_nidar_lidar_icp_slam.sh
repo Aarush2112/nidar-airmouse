@@ -91,25 +91,50 @@ if ! kill -0 "${PIDS[1]}" 2>/dev/null; then
 fi
 
 echo
-echo "===== SLAM LIFECYCLE ====="
+echo "===== AUTOMATIC SLAM ACTIVATION ====="
 
-STATE=$(ros2 lifecycle get /slam_toolbox 2>/dev/null || true)
-echo "$STATE"
+SLAM_READY=false
 
-if [[ "$STATE" == *"unconfigured"* ]]; then
-    ros2 lifecycle set /slam_toolbox configure
-    sleep 2
+for ATTEMPT in $(seq 1 15); do
     STATE=$(ros2 lifecycle get /slam_toolbox 2>/dev/null || true)
-fi
 
-if [[ "$STATE" == *"inactive"* ]]; then
-    ros2 lifecycle set /slam_toolbox activate
+    echo "Attempt $ATTEMPT: $STATE"
+
+    if [[ "$STATE" == *"active"* ]]; then
+        SLAM_READY=true
+        break
+    fi
+
+    if [[ "$STATE" == *"unconfigured"* ]]; then
+        ros2 lifecycle set /slam_toolbox configure || true
+        sleep 2
+    fi
+
+    STATE=$(ros2 lifecycle get /slam_toolbox 2>/dev/null || true)
+
+    if [[ "$STATE" == *"inactive"* ]]; then
+        ros2 lifecycle set /slam_toolbox activate || true
+        sleep 2
+    fi
+
+    STATE=$(ros2 lifecycle get /slam_toolbox 2>/dev/null || true)
+
+    if [[ "$STATE" == *"active"* ]]; then
+        SLAM_READY=true
+        break
+    fi
+
     sleep 2
+done
+
+if [[ "$SLAM_READY" != true ]]; then
+    echo "ERROR: SLAM Toolbox did not become active."
+    exit 1
 fi
 
 echo
 echo "===== FINAL SLAM STATUS ====="
-ros2 lifecycle get /slam_toolbox || true
+ros2 lifecycle get /slam_toolbox
 
 echo
 echo "===== AVAILABLE TOPICS ====="

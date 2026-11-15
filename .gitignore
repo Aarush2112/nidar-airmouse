@@ -48,7 +48,9 @@ Thumbs.db
 *.swo
 *~
 *.bak
-# Named launcher snapshots are intentionally preserved
+# Previously tracked launcher snapshots remain in history; ignore new local backups
+*.backup_*
+*.backup
 
 # Credentials and local environment configuration
 .env
@@ -84,3 +86,12 @@ id_ed25519*
 *.bin
 *.hex
 ros2_ws/frames_*
+
+# Compiler and CMake outputs outside standard build directories
+*.o
+*.a
+*.so
+*.so.*
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
