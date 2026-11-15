@@ -27,17 +27,17 @@ Ubuntu 24.04 and ROS 2 Jazzy host the YDLIDAR driver, RTAB-Map ICP Odometry (`rt
 
 ```mermaid
 flowchart TD
-    L[YDLIDAR X2] --> S[/scan]
-    S --> I[RTAB-Map ICP Odometry]
-    I --> O[/odom_icp and odom to base_link TF]
-    S --> T[SLAM Toolbox]
+    L["YDLIDAR X2"] --> S["/scan"]
+    S --> I["RTAB-Map ICP Odometry"]
+    I --> O["/odom_icp and odom to base_link TF"]
+    S --> T["SLAM Toolbox"]
     O --> T
-    T --> M[/map and map to odom TF]
-    M --> D[Saved occupancy maps and serialized pose graphs]
-    C[RealSense D455 stereo] --> V[Stereo sync, relay, stereo odometry]
-    V --> B[Body-offset bridge and preview odometry]
-    B -. future integration .-> F[Localization fusion and PX4]
-    O -. future integration .-> F
+    T --> M["/map and map to odom TF"]
+    M --> D["Saved occupancy maps and serialized pose graphs"]
+    C["RealSense D455 stereo"] --> V["Stereo sync, relay, stereo odometry"]
+    V --> B["Body-offset bridge and preview odometry"]
+    B -.->|"future integration"| F["Localization fusion and PX4"]
+    O -.->|"future integration"| F
 ```
 
 ## LiDAR SLAM
