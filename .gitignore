@@ -71,3 +71,8 @@ id_rsa*
 id_ed25519*
 .netrc
 .git-credentials
+
+# Local SDK install, relocated build snapshot, nested repository metadata
+/lidar/sdk_install/
+/lidar/YDLidar-SDK/build_before_move/
+**/.git/

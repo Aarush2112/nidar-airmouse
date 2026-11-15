@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+PROJECT="$HOME/NIDAR AirMouse"
+LOG_DIR="$PROJECT/lidar_slam/logs/icp"
+PORT="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0"
+CONFIG="$PROJECT/ros2_ws/install/ydlidar_ros2_driver/share/ydlidar_ros2_driver/params/X2.yaml"
+
+source /opt/ros/jazzy/setup.bash
+source "$PROJECT/ros2_ws/install/setup.bash"
+
+mkdir -p "$LOG_DIR"
+
+echo "========== NIDAR ICP TABLETOP SYSTEM =========="
+
+if [ ! -e "$PORT" ] || [ ! -f "$CONFIG" ]; then
+    echo "ERROR: LiDAR port or configuration missing."
+    exit 1
+fi
+
+if pgrep -u "$USER" -f '[/]ydlidar_ros2_driver_node|[/]rf2o_laser_odometry_node|[/]icp_odometry|[/]static_transform_publisher' >/dev/null; then
+    echo "ERROR: Existing LiDAR or odometry processes detected."
+    echo "Stop the previous launcher first."
+    exit 1
+fi
+
+PIDS=()
+
+cleanup() {
+    trap - EXIT INT TERM
+    echo
+    echo "Stopping ICP tabletop system..."
+    for pid in "${PIDS[@]}"; do
+        kill -TERM "$pid" 2>/dev/null || true
+    done
+    for pid in "${PIDS[@]}"; do
+        wait "$pid" 2>/dev/null || true
+    done
+    echo "Shutdown complete."
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+echo "[1/3] Starting YDLIDAR X2..."
+
+ros2 run ydlidar_ros2_driver ydlidar_ros2_driver_node \
+    --ros-args \
+    --params-file "$CONFIG" \
+    -p port:="$PORT" \
+    -p frequency:=7.0 \
+    -p range_max:=8.0 \
+    > "$LOG_DIR/lidar.log" 2>&1 &
+
+PIDS+=("$!")
+sleep 4
+
+echo "[2/3] Starting corrected LiDAR TF..."
+
+ros2 run tf2_ros static_transform_publisher \
+    --x 0 --y 0 --z 0 \
+    --roll 0 --pitch 0 \
+    --yaw 3.141592653589793 \
+    --frame-id base_link \
+    --child-frame-id laser_frame \
+    > "$LOG_DIR/static_tf.log" 2>&1 &
+
+PIDS+=("$!")
+sleep 2
+
+echo "[3/3] Starting ICP Odometry..."
+
+ros2 run rtabmap_odom icp_odometry \
+    --ros-args \
+    -r scan:=/scan \
+    -r odom:=/odom_icp \
+    -p frame_id:=base_link \
+    -p odom_frame_id:=odom \
+    -p publish_tf:=true \
+    -p qos:=2 \
+    -p wait_for_transform:=0.3 \
+    -p use_sim_time:=false \
+    > "$LOG_DIR/icp.log" 2>&1 &
+
+PIDS+=("$!")
+sleep 5
+
+echo
+echo "===== PROCESS STATUS ====="
+
+NAMES=("YDLIDAR" "Static TF" "ICP Odometry")
+
+for i in "${!PIDS[@]}"; do
+    if ! kill -0 "${PIDS[$i]}" 2>/dev/null; then
+        echo "ERROR: ${NAMES[$i]} process exited."
+        case "$i" in
+            0) tail -30 "$LOG_DIR/lidar.log" ;;
+            1) tail -30 "$LOG_DIR/static_tf.log" ;;
+            2) tail -30 "$LOG_DIR/icp.log" ;;
+        esac
+        exit 1
+    fi
+    echo "${NAMES[$i]}: Running"
+done
+
+echo
+echo "===== ICP STARTUP LOG ====="
+tail -20 "$LOG_DIR/icp.log"
+
+echo
+echo "========== ICP SYSTEM STARTED =========="
+echo "Logs: $LOG_DIR"
+echo "Press Ctrl+C to stop."
+
+while true; do
+    for i in "${!PIDS[@]}"; do
+        if ! kill -0 "${PIDS[$i]}" 2>/dev/null; then
+            echo "ERROR: ${NAMES[$i]} process stopped."
+            exit 1
+        fi
+    done
+    sleep 2
+done
