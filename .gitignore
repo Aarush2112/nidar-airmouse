@@ -48,7 +48,7 @@ Thumbs.db
 *.swo
 *~
 *.bak
-# Deliberately retain named VIO .backup_* and .recovery_* experiments.
+# Named launcher snapshots are intentionally preserved
 
 # Credentials and local environment configuration
 .env
@@ -72,7 +72,15 @@ id_ed25519*
 .netrc
 .git-credentials
 
-# Local SDK install, relocated build snapshot, nested repository metadata
+# Local SDK install and relocated build snapshot
 /lidar/sdk_install/
 /lidar/YDLidar-SDK/build_before_move/
+# Nested repository metadata, recordings and firmware
 **/.git/
+*.mp4
+*.avi
+*.mov
+*.px4
+*.bin
+*.hex
+ros2_ws/frames_*
