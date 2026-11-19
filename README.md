@@ -64,6 +64,56 @@ ros2 service call /slam_toolbox/serialize_map slam_toolbox/srv/SerializePoseGrap
 
 Check each response for `result: 0` and confirm the files were written before stopping. Service request fields were checked against the installed Jazzy service definitions. Saving is a separate step; the launchers do not automatically save on shutdown.
 
+## Autonomous Frontier Exploration
+
+The goal is to identify boundaries where known free space meets unexplored space and evaluate nearby observation points for future indoor exploration. **All current frontier tests use saved occupancy maps with the LiDAR disconnected. Path planning, live autonomous navigation, obstacle avoidance, and PX4 control integration are pending.**
+
+- `frontier_detector.py` finds free cells with a four-connected unknown neighbor, groups them into eight-connected clusters, and calculates cluster centroids.
+- `frontier_node.py` subscribes to `/map` and publishes a `MarkerArray` on `/nidar/frontier_markers`. The default minimum cluster size is five cells. Green points show retained frontier cells and orange spheres show cluster centroids for visualization.
+- `frontier_safety.py` finds four-connected regions of known free space and filters candidate cells by square clearance. Occupied cells, unknown cells, and map boundaries constrain clearance. The ROS node publishes frontier and centroid markers. Offline safety checks and viewpoint selection are separate from that node.
+
+### Saved-map test
+
+Build the package with ROS 2 Jazzy and colcon. The replay requires `nav2_map_server` and optionally RViz.
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cd ros2_ws
+colcon build --packages-select nidar_frontier_exploration
+cd ..
+source ros2_ws/install/setup.bash
+ros2 run nav2_map_server map_server --ros-args -p \
+  yaml_filename:="$(pwd)/maps/icp_tabletop/nidar_icp_recovery_square_v3.yaml"
+```
+
+From another terminal at the repository root, activate the saved-map publisher:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+ros2 lifecycle set /map_server configure
+ros2 lifecycle set /map_server activate
+```
+
+Run the frontier node in a third terminal at the repository root:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source ros2_ws/install/setup.bash
+ros2 run nidar_frontier_exploration frontier_node
+```
+
+To count all clusters, restart the frontier node with `--ros-args -p min_cluster_size:=1`. To inspect the default markers in RViz, set the fixed frame to `map` and add a Map display for `/map` and a MarkerArray display for `/nidar/frontier_markers`. Use Transient Local durability so RViz can receive the saved map and markers after they have been published.
+
+| Result on `nidar_icp_recovery_square_v3` | Count |
+| --- | ---: |
+| Detected frontier cells | 565 |
+| Clusters before minimum-size filtering | 46 |
+| Clusters retained with at least five cells | 16 |
+| Frontier cells visualized across retained clusters | 519 |
+| Offline candidate viewpoints from the 16 retained clusters | 4 |
+
+The [aligned frontier overlay](maps/frontier_visualizations/nidar_frontier_square_v3_aligned.png) shows the retained cells and centroids. The [saved viewpoint overlay](maps/frontier_visualizations/nidar_frontier_viewpoints_v1.png) shows four candidate viewpoints in blue. The viewpoint count is recorded from that offline artifact.
+
 ## Visual-Inertial Odometry (VIO)
 
 VIO remains an alternative localization approach. Previous camera-based experiments experienced tracking difficulties around plain white, low-texture walls. **VIO can be reconsidered when the environment provides sufficient visual features and texture**, subject to camera calibration, lighting, motion conditions, and experimental validation. The absence of white walls alone does not establish reliable tracking.
@@ -139,7 +189,8 @@ Logs are written under `lidar_slam/logs/`: `unified/` and `icp/` for the standar
 | `script/` | Camera pipeline, bridges, diagnostics, and waypoint planners |
 | `config/` | SLAM parameters, RViz configuration, and historical snapshots |
 | `maps/icp_tabletop/` | Valuable occupancy maps and serialized pose graphs |
-| `ros2_ws/src/` | YDLIDAR ROS 2 driver and retained OpenVINS source |
+| `maps/frontier_visualizations/` | Saved frontier and viewpoint overlays |
+| `ros2_ws/src/` | YDLIDAR ROS 2 driver, frontier exploration, and retained OpenVINS source |
 | `lidar/`, `lidar_slam/` | SDK and LiDAR research workspace/notes |
 | `docs/`, `tests/` | Supporting documentation and offline planner tests |
 

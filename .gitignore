@@ -95,3 +95,7 @@ ros2_ws/frames_*
 CMakeFiles/
 CMakeCache.txt
 compile_commands.json
+
+# Frontier exploration development snapshots
+/ros2_ws/src/nidar_frontier_exploration/**/*.before_*
+/maps/frontier_visualizations/nidar_frontier_square_v3.png
